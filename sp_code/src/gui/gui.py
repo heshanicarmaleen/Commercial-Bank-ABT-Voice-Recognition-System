@@ -399,17 +399,21 @@ class Login(QDialog):
 
    def login(self):
 	with open("avatar/metainfo.txt") as db:
-            for line in db:
-		print line
-                tmp = line.split('|')
-                print "Check User", tmp[0]
-            	if self.user.displayText() == tmp[0] and self.password.displayText() == tmp[3]:
-			self.accept()
-		#else:
-		#	return 0
+	     if len(self.user.displayText()) > 1 :		
+            	for line in db:
+			print line
+                	tmp = line.split('|')
+	                print "Check User", tmp[0]
+	            	if self.user.displayText() == tmp[0] and self.password.displayText() == tmp[3]:
+				self.accept()
+				break
+			else:
+				QMessageBox.warning(self, "Warning", "Invalid Username or Password")
+				break
 
 
-
+	     else:
+		QMessageBox.warning(self, "Warning", "Empty Username or Password ")	
 
     ###### RECOGNIZE
    def add_record_data(self, i):
@@ -453,10 +457,14 @@ class Login(QDialog):
         if not label:
             label = "Nobody"
 	else:
-	    self.accept()
-        print label
-        
 
+            print label
+	    if label == "Empty User":
+		QMessageBox.warning(self, "Warning", "Not Recognized ")		
+            else:
+  		self.accept()					
+		QMessageBox.warning(self, "Login Success", label)		
+	
    def reco_remove_update(self, fs, signal):
         new_signal = self.backend.filter(fs, signal)
         print "After removed: {0} -> {1}".format(len(signal), len(new_signal))

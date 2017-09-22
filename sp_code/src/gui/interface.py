@@ -1,5 +1,4 @@
 #!/usr/bin/env python2
-
 import time
 import os
 import sys
@@ -11,13 +10,19 @@ import traceback as tb
 
 from feature import mix_feature
 from filters.VAD import VAD
-from skgmm import GMMSet, GMM
+
+try:
+    from gmmset import GMMSetPyGMM as GMMSet
+    from gmmset import GMM
+except:
+    print >> sys.stderr, "Warning: failed to import fast-gmm, use gmm from scikit-learn instead"
+    from skgmm import GMMSet, GMM
 
 CHECK_ACTIVE_INTERVAL = 1       # seconds
 
 class ModelInterface(object):
 
-    UBM_MODEL_FILE = 'model/ubm.mixture-32.utt-300.model'
+    UBM_MODEL_FILE = None
 
     def __init__(self):
         self.features = defaultdict(list)
@@ -51,7 +56,7 @@ class ModelInterface(object):
         self.features[name].extend(feat)
 
     def _get_gmm_set(self):
-        if os.path.isfile(self.UBM_MODEL_FILE):
+        if self.UBM_MODEL_FILE and os.path.isfile(self.UBM_MODEL_FILE):
             try:
                 from gmmset import GMMSetPyGMM
                 if GMMSet is GMMSetPyGMM:
@@ -67,7 +72,7 @@ class ModelInterface(object):
     def train(self):
         self.gmmset = self._get_gmm_set()
         start = time.time()
-        print "Start training...."
+        print "Start training..."
         for name, feats in self.features.iteritems():
             self.gmmset.fit_new(feats, name)
         print time.time() - start, " seconds"
